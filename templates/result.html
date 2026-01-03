@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Detection Result</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* hide horizontal scroll */
+  overflow-y: auto;   /* only vertical scroll if needed */
+  height: 100%;
+  box-sizing: border-box;
+}
+
+
+/* MAIN CARD CONTAINER */
+.container {
+  max-width: 1500px;  /* container width */
+  margin: 40px auto;
+  display: flex;
+  background: #fff;
+  border-radius: 22px;
+  box-shadow: 0 20px 50px rgba(126,34,206,0.15);
+  overflow: hidden;
+  flex-wrap: wrap;
+  padding: 20px 30px;
+  gap: 40px;
+  min-height: auto; /* let height fit content */
+
+ /* fit screen height */
+}
+
+/* LEFT PANEL */
+.left-panel {
+  flex: 1 1 450px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px;
+  background: #f4f2ff;
+  gap: 25px;
+}
+
+.left-panel h3 {
+  margin:0;
+  color: #7e22ce;
+  font-size: 26px;
+  text-align:center;
+}
+
+.image-box {
+  width:100%;
+  max-width: 450px;
+  height: 750px;          /* height adjusts to image */
+  max-height: 400px; 
+  background:#fff;
+  border-radius: 18px;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow: 0 10px 25px rgba(126,34,206,0.15);
+}
+
+.image-box img {
+  width: 100%;
+  height: 150%;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+.analyze-again {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.analyze-again a {
+  text-decoration: none;
+  background: #7e22ce;
+  color: #fff;
+  font-weight:600;
+  padding:12px 30px;
+  border-radius:12px;
+  box-shadow: 0 6px 18px rgba(126,34,206,0.25);
+  transition: all 0.3s ease;
+}
+
+.analyze-again a:hover {
+  background: #a855f7;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(126,34,206,0.35);
+}
+
+/* RIGHT PANEL */
+.right-panel {
+  flex: 1 1 550px;
+  padding: 30px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 35px;
+  justify-content: flex-start;
+}
+
+/* PREDICTION + PIE ROW */
+.prediction-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+.prediction-heading {
+  font-size: 40px;
+  font-weight: 700;
+  color: #7e22ce;
+  text-shadow: 1px 1px 8px rgba(126,34,206,0.2);
+  margin-left: 60px; /* moves it 20px right */
+
+}
+
+.circle-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.circle {
+  width:160px;
+  height:160px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+  font-size:24px;
+  color:#1f2937;
+  box-shadow:0 8px 22px rgba(126,34,206,0.15);
+  transition: transform 0.3s ease;
+}
+
+.circle:hover {
+  transform: scale(1.05);
+}
+
+.circle span {
+  width:110px;
+  height:110px;
+  background:#fff;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+  font-weight:700;
+}
+
+.circle-container p {
+  color:#6b7280;
+  margin: 8px 0 0 0;
+  font-weight:500;
+  font-size:14px;
+}
+
+/* FEATURE EVIDENCE */
+.features {
+  background:#fff;
+  border-radius: 18px;
+  padding: 25px;
+  box-shadow:0 10px 25px rgba(126,34,206,0.15);
+}
+
+.features h3 {
+  margin:0 0 18px 0;
+  color: #7e22ce;
+  font-size:24px;
+  text-shadow:1px 1px 6px rgba(126,34,206,0.2);
+}
+
+.feature {
+  margin-bottom:20px;
+}
+
+.feature label {
+  display:flex;
+  justify-content:space-between;
+  font-size:16px;
+  margin-bottom:6px;
+  font-weight:500;
+}
+
+.track {
+  width:100%;
+  height:14px;
+  background:#e5e7eb;
+  border-radius:14px;
+  overflow:hidden;
+}
+
+.fill {
+  height:100%;
+  width:0;
+  border-radius:14px;
+  transition: width 1s ease;
+}
+
+.red{ background:#ef4444; }
+.green{ background:#22c55e; }
+
+/* RESPONSIVE */
+@media(max-width:1100px){
+  .container {
+    flex-direction: column;
+    padding:30px;
+    min-height: auto;
+  }
+
+  .left-panel, .right-panel {
+    flex:1 1 100%;
+  }
+
+  .prediction-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <h3>Uploaded Image</h3>
+    <div class="image-box">
+      <img src="{{ image_path }}" alt="Uploaded Image">
+    </div>
+
+    <div class="analyze-again">
+      <a href="/">🔄 Analyze Another Image</a>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+
+    <!-- PREDICTION + PIE CHART ROW -->
+    <div class="prediction-row">
+      <div class="prediction-heading">{{ prediction }}</div>
+
+      <div class="circle-container">
+        <div class="circle"
+             data-confidence="{{ confidence }}"
+             data-prediction="{{ prediction }}">
+          <span>{{ confidence }}%</span>
+        </div>
+        <p>Detection Confidence</p>
+      </div>
+    </div>
+
+    <!-- FEATURE EVIDENCE -->
+    <div class="features">
+      <h3>Feature Evidence</h3>
+      {% for key, value in features.items() %}
+      <div class="feature">
+        <label>
+          {{ key.replace('_',' ') | title }}
+          <span>{{ value }}%</span>
+        </label>
+        <div class="track">
+          <div class="fill"
+               data-value="{{ value }}"
+               data-prediction="{{ prediction }}">
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+/* CIRCULAR CONFIDENCE */
+document.querySelectorAll(".circle").forEach(circle=>{
+  const value = circle.dataset.confidence;
+  const prediction = circle.dataset.prediction;
+
+  const main = prediction === "Synthetic Image" ? "#ef4444" : "#22c55e";
+  const rest = prediction === "Synthetic Image" ? "#22c55e" : "#ef4444";
+
+  circle.style.background = `conic-gradient(
+    ${main} ${value}%,
+    ${rest} ${value}%
+  )`;
+});
+
+/* FEATURE BARS */
+document.querySelectorAll(".fill").forEach(bar=>{
+  const value = bar.dataset.value;
+  const prediction = bar.dataset.prediction;
+
+  bar.classList.add(
+    prediction === "Synthetic Image" ? "red" : "green"
+  );
+
+  setTimeout(()=>{
+    bar.style.width = value + "%";
+  },100);
+});
+</script>
+
+</body>
+</html>

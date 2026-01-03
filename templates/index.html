@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Synthetic Image Detector</title>
+<style>
+/* Your existing CSS remains unchanged */
+* { box-sizing: border-box; font-family: "Segoe UI", Arial, sans-serif; }
+body { padding:0; margin:0; background:#f5f0ff; padding:10px; }
+
+/* Hero */
+.hero { text-align:center; margin:30px 0; }
+.hero h1 {
+    font-size: 48px; /* bigger size */
+    font-weight: 800;
+    text-align: center;
+    background: linear-gradient(135deg, #ba22ce, #a78bfa); /* purple gradient */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 2px 2px 10px rgba(126,34,206,0.4); /* subtle purple shadow */
+    animation: fadeIn 1s ease forwards;
+    margin-bottom: 10px;
+}
+
+/* Hero paragraph base */
+.hero p {
+    color: #6b7280; /* gray text */
+    font-size: 18px;
+    text-align: center;
+    max-width: 700px;
+    margin: 10px auto 30px;
+    line-height: 1.6;
+}
+
+/* Highlight specific text inside hero paragraph */
+.hero p .highlight {
+    color: #ba22ce; /* purple highlight */
+    font-weight: 700;
+    text-shadow: 0 0 5px rgba(137, 17, 242, 0.3); /* subtle purple glow */
+}
+
+/* Mobile adjustment */
+@media (max-width: 768px) {
+    .hero p {
+        font-size: 16px;
+    }
+}
+
+
+/* Main container */
+.main-container { display:flex; gap:120px; max-width:1100px; margin:80px auto; padding:40px; }
+.steps { width:45%; }
+.step { padding-left:30px; }
+.step h3 { color:#ba22ce; 
+font-size: 20px;}
+.step p { color:#6b7280; }
+.connector { height:40px; margin-left:200px; border-left:2px dotted #111827; }
+.connector.active { border-left-color:#dc2626; }
+
+/* Upload */
+.upload-card {
+    border-radius: 16px;                      /* smooth corners */
+    padding: 30px;
+    margin: 20px 0 20px 50px;                /* move slightly to the right */
+    width: 350px;
+    background-color: #faf5ff;               /* subtle light purple */
+    box-shadow: 0 6px 20px rgba(126, 34, 206, 0.2); /* soft floating shadow */
+    transition: all 0.3s ease;               /* smooth hover effect */
+}
+
+.upload-box {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 30px;
+    border: 3px dotted #7e22ce; /* purple dotted border */
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    background-color: #faf5ff; /* subtle purple-ish background */
+}
+
+/* Hover effect */
+.upload-box:hover {
+    background-color: #f3e8ff; /* slightly darker purple background */
+    box-shadow: 0 4px 15px rgba(126,34,206,0.4); /* soft glow */
+    transform: scale(1.02); /* slight pop on hover */
+}
+
+/* Image preview inside box */
+.upload-box #previewImage {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    transition: 0.3s;
+}
+
+/* When image is uploaded, make it bigger */
+.upload-box.uploaded #previewImage {
+    width: 100%;
+    height: 200px;
+    border-radius: 10px;
+}
+
+#upload-btn{ padding:10px; border:2px dotted lightgray; }
+#analyze-btn {
+    margin-top: 30px;
+    margin-left: 60px;
+    padding: 15px 25px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, #7e22ce, #a78bfa); /* purple gradient */
+    box-shadow: 0 4px 15px rgba(126,34,206,0.4);
+    transition: all 0.3s ease;
+}
+
+/* Hover effect */
+#analyze-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(126,34,206,0.6), 0 0 15px rgba(167,139,250,0.4);
+}
+
+/* Active effect (click) */
+#analyze-btn:active {
+    transform: scale(0.98);
+    box-shadow: 0 4px 15px rgba(126,34,206,0.4);
+}
+#previewImage { width:80px; height:80px; object-fit:cover; border-radius:8px; transition:0.3s; }
+.uploaded #previewImage { width:100%; height:200px; border-radius:10px; }
+
+/* ================= INPUT CONDITIONS ================= */
+.input-conditions {
+    text-align: center;
+    margin: 60px 0;
+}
+
+.input-conditions h2 {
+    font-size: 36px;
+    color: #7e22ce;           /* deep purple heading */
+    text-shadow: 1px 1px 5px rgba(126, 34, 206, 0.3); /* subtle glow */
+    margin-bottom: 15px;
+}
+
+.input-conditions p {
+    font-size: 16px;
+    color: #6b7280;           /* gray text */
+    margin-bottom: 40px;
+}
+
+/* Grid layout */
+.conditions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 30px;
+    max-width: 1100px;
+    margin: auto;
+}
+
+/* Individual condition card */
+.condition {
+    position: relative;
+    background-color: #faf5ff;        /* light purple background */
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 6px 15px rgba(126, 34, 206, 0.2); /* soft purple shadow */
+    transition: all 0.3s ease;
+}
+
+/* Hover effect */
+.condition:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(126, 34, 206, 0.35);
+}
+
+/* Condition image */
+.condition img {
+    width: 100%;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    transition: transform 0.3s ease;
+}
+
+/* Zoom image slightly on hover */
+.condition:hover img {
+    transform: scale(1.05);
+}
+
+/* Good / Bad icon */
+.good, .bad {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    color: white;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    font-size: 16px;
+}
+
+/* Green / Red icons */
+.good {
+    background-color: #22c55e; /* green */
+}
+.bad {
+    background-color: #ef4444; /* red */
+}
+
+/* Condition headings */
+.condition h4 {
+    font-size: 20px;
+    color: #7e22ce;             /* purple for headings */
+    margin: 10px 0 5px;
+}
+
+/* Condition description */
+.condition p {
+    font-size: 14px;
+    color: #6b7280;             /* gray text */
+    margin: 0;
+}
+
+/* Core Features */
+/* ================= CORE FEATURES ================= */
+.core-features {
+    text-align: center;
+    margin: 60px 0;
+}
+
+.core-features h2 {
+    font-size: 36px;
+    color: #7e22ce;                       /* deep purple heading */
+    text-shadow: 1px 1px 5px rgba(126, 34, 206, 0.3); /* subtle glow */
+    margin-bottom: 40px;
+}
+
+/* Grid layout for feature cards */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 30px;
+    max-width: 1100px;
+    margin: auto;
+}
+
+/* Individual feature card */
+#card {
+    background-color: #f3e8ff;            /* lighter purple card */
+    border-radius: 16px;
+    padding: 25px 20px;
+    box-shadow: 0 6px 20px rgba(126, 34, 206, 0.2); /* soft shadow */
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+/* Hover effect: lift and scale card */
+#card:hover {
+    transform: scale(1.05) translateY(-5px);
+    box-shadow: 0 12px 30px rgba(126, 34, 206, 0.35); /* stronger shadow on hover */
+}
+
+/* Feature headings */
+#card h4 {
+    font-size: 22px;
+    color: #7e22ce;                       /* purple headings */
+    margin-bottom: 10px;
+    text-shadow: 1px 1px 3px rgba(126, 34, 206, 0.2); /* subtle glow */
+}
+
+/* Feature description */
+#card p {
+    font-size: 15px;
+    color: #6b7280;                       /* gray text */
+    margin: 0;
+}
+
+/* How It Works */
+/* ================= HOW IT WORKS ================= */
+/* ================= HOW IT WORKS ================= */
+.how-it-works-con {
+    text-align: center;
+    padding: 60px 20px;
+    background-color: #faf5ff; /* subtle light purple background */
+}
+
+.how-it-works-con h2 {
+    font-size: 36px;
+    color: #7e22ce; /* deep purple */
+    text-shadow: 1px 1px 5px rgba(126, 34, 206, 0.3);
+    margin-bottom: 40px;
+}
+
+/* Flex container */
+.how-it-works {
+    display: flex;
+    gap: 60px;
+    align-items: center;
+    max-width: 1100px;
+    margin: auto;
+    flex-wrap: wrap; /* allows stacking on mobile */
+}
+
+/* Text block */
+.how-text {
+    flex: 1 1 500px; /* takes available space */
+    text-align: left;
+    padding: 20px;
+}
+
+.how-text p {
+    font-size: 18px;
+    line-height: 1.8;
+    color: #4b2c91; /* darker purple */
+}
+
+.how-text p strong {
+    color: #a855f7; /* highlight important terms */
+    font-weight: 600;
+}
+
+/* Button styling */
+.how-text-btn {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 8px 18px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #7e22ce;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.how-text-btn:hover {
+    background-color: #a855f7;
+    box-shadow: 0 6px 15px rgba(126, 34, 206, 0.4);
+    transform: translateY(-2px);
+}
+
+/* Image block */
+.how-image {
+    flex: 1 1 400px; /* image takes remaining space */
+    text-align: right;
+}
+
+.how-image img {
+    width: 100%;
+    border-radius: 12px;
+    max-width: 400px;
+}
+
+/* Responsive: stack text and image vertically */
+@media (max-width: 768px) {
+    .how-it-works {
+        flex-direction: column;
+        text-align: center;
+    }
+    .how-text {
+        width: 100%;
+        text-align: center;
+    }
+    .how-image {
+        text-align: center;
+        margin-top: 20px;
+    }
+}
+
+/* Footer */
+.footer { text-align:center; color:#6b7280; margin:60px 0 20px; }
+
+/* Responsive */
+@media (max-width:768px){
+  .main-container{ flex-direction:column; gap:40px; padding:10px; }
+  .steps{ width:100%; }
+  .connector{ margin-left:150px; }
+  .upload-card{ width:100%; }
+  #analyze-btn{ margin-left:0; width:100%; }
+  .conditions-grid{ grid-template-columns:1fr; }  /* each condition full width */
+  .features-grid{ grid-template-columns:1fr; }   /* each feature full width */
+  .how-it-works{ flex-direction:column; }       /* text on top, image below */
+  .how-text{ width:100%; }
+  .how-image img{ width:100%; }
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- HERO -->
+<header class="hero">
+    <h1>Synthetic Image Detector</h1>
+   <p>
+    Analyze digital images to identify if they are human-made or AI-generated.<br>
+    This tool is designed exclusively for <strong class="highlight">human face images</strong>.
+</p>
+
+</header>
+
+<!-- MAIN -->
+<section class="main-container">
+
+    <!-- Steps -->
+    <div class="steps">
+        <div class="step">
+            <h3>Step 1: Upload Face Image</h3>
+            <p>Select a clear human face image for analysis.</p>
+        </div>
+        <div class="connector" id="line-1"></div>
+        <div class="step">
+            <h3>Step 2: AI Analysis</h3>
+            <p>Deep learning model analyzes pixels and textures.</p>
+        </div>
+        <div class="connector" id="line-2"></div>
+        <div class="step">
+            <h3>Step 3: View Result</h3>
+            <p>Instant real or synthetic classification.</p>
+        </div>
+    </div>
+
+    <!-- Upload -->
+    <div class="upload-card">
+        <form action="/analyze" method="POST" enctype="multipart/form-data">
+            <label class="upload-box" id="uploadBox">
+                <img id="previewImage" src="https://cdn-icons-png.flaticon.com/512/685/685686.png">
+                <p>Click to Upload Face Image</p>
+                <input type="file" name="image" accept="image/*" required hidden>
+            </label>
+            <button id="analyze-btn" type="submit">Analyze Image</button>
+        </form>
+    </div>
+</section>
+
+<!-- Input Conditions -->
+<section class="input-conditions">
+<h2>Input Conditions</h2>
+<p>Please make sure the uploaded images follow these guidelines.</p>
+ <div class="conditions-grid">
+        <div class="condition">
+            <img src="static/extra_images/blur vs real.png">
+            <span class="bad">✖</span>
+            <h4>No Unclear Images</h4>
+            <p>Upload sharp and clear photos.</p>
+        </div>
+
+        <div class="condition">
+            <img src="static/extra_images/pic4.jpg">
+            <span class="good">✔</span>
+           <h4>Clear Frontal Faces</h4>
+            <p>Face should be forward with visible features.</p>
+        </div>
+
+<div class="condition">
+            <img src="static/extra_images/object.png">
+            <span class="bad">✖</span>
+             <h4>No Objects / Animals</h4>
+            <p>No Images other than Human Faces</p>
+        </div>
+
+        <div class="condition">
+            <img src="static/extra_images/human.png">
+            <span class="good">✔</span>
+            <h4>Only Human Faces</h4>
+            <p>Only human faces should appear.</p>
+        </div>
+    </div>
+</section>
+<!-- Core Features -->
+<section class="core-features">
+<h2>Core Features</h2>
+<div class="features-grid">
+<div id="card"><h4>Face-Only Detection</h4> <p>Ensures analysis is performed only on human faces, ignoring objects, animals, or blurry images for accurate results.</p>
+        </div>
+<div id="card">
+            <h4>Pixel & Texture Analysis</h4>
+            <p>Detects subtle AI artifacts and inconsistencies at the pixel level that are invisible to the naked eye.</p>
+        </div>
+
+        <div id="card">
+            <h4>Metadata Inspection</h4>
+            <p>Checks EXIF data and hidden AI traces to identify signs of manipulation or synthetic generation.</p>
+        </div>
+
+        <div id="card">
+            <h4>Real-Time Results</h4>
+            <p>Provides instant predictions using optimized neural networks for fast and reliable classification.</p>
+        </div>
+</div>
+</section>
+
+<!-- How It Works -->
+<section class="how-it-works-con">
+<h2>How It Works</h2>
+<div class="how-it-works">
+<div class="how-text">
+<p>The Synthetic Image Detector uses a CNN-based deep learning model trained on real and AI-generated human face images. It evaluates pixel-level inconsistencies, lighting patterns, and facial symmetry to differentiate real faces from synthetic ones generated by GANs and diffusion models.</p>
+<a href="/learnmore" class="how-text-btn">Learn More →</a>
+</div>
+<div class="how-image">
+<img src="static/extra_images/howitworks.png">
+</div>
+</div>
+</section>
+
+<footer class="footer">© 2026 Synthetic Image Detector | Human Face AI Detection System</footer>
+
+<script>
+const fileInput = document.querySelector("input[name='image']");
+const previewImage = document.getElementById("previewImage");
+const uploadBox = document.getElementById("uploadBox");
+
+fileInput.addEventListener("change", function () {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        previewImage.src = e.target.result;
+        uploadBox.classList.add("uploaded");
+        document.getElementById("line-1").classList.add("active");
+    };
+    reader.readAsDataURL(file);
+});
+
+document.querySelector("form").addEventListener("submit", function () {
+    document.getElementById("line-2").classList.add("active");
+});
+
+
+
+</script>
+
+</body>
+</html>
