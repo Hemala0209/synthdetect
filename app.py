@@ -4,48 +4,48 @@ import numpy as np
 from PIL import Image
 import os
 import cv2
+import logging
 
+# ---------------- Flask Setup ----------------
 app = Flask(__name__)
 
 UPLOAD_FOLDER = "static/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Load trained model
+# ---------------- Suppress TensorFlow GPU/AVX logs ----------------
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # suppress INFO and WARNING messages
+
+# ---------------- Load Model ----------------
 model = tf.keras.models.load_model("synthetic_image_detector.h5")
 
-# Haarcascade for face detection
+# ---------------- Haarcascade for face detection ----------------
 face_cascade = cv2.CascadeClassifier(
     cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
 )
 
+# ---------------- Routes ----------------
 @app.route("/", methods=["GET"])
 def home():
     return render_template("index.html")
 
-@app.route("/learnmore")
+@app.route("/learnmore", methods=["GET"])
 def learnmore():
     return render_template("learnmore.html")
+
 @app.route("/analyze", methods=["POST"])
 def analyze():
-
     if "image" not in request.files:
-        return render_template(
-            "index.html",
-            error_message="No image uploaded"
-        )
+        return render_template("index.html", error_message="No image uploaded")
 
     file = request.files["image"]
 
     if file.filename == "":
-        return render_template(
-            "index.html",
-            error_message="No image selected"
-        )
+        return render_template("index.html", error_message="No image selected")
 
     filepath = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(filepath)
 
-    # ---------------- MODEL PREDICTION ----------------
+    # ---------------- Model Prediction ----------------
     img = Image.open(filepath).convert("RGB").resize((224, 224))
     img = np.array(img) / 255.0
     img = np.expand_dims(img, axis=0)
@@ -61,6 +61,7 @@ def analyze():
 
     confidence = round(confidence, 2)
 
+    # ---------------- Feature Analysis (Example) ----------------
     features = {
         "Smooth Textures": round(prob * 100, 2),
         "Unnatural Patterns": round(prob * 90, 2),
@@ -78,6 +79,10 @@ def analyze():
         features=features
     )
 
+# ---------------- Run App ----------------
 if __name__ == "__main__":
-    port=int(os.environ.get("PORT",5000))
-    app.run(host="0.0.0.0",port=port)
+    port = int(os.environ.get("PORT", 5000))
+    # Disable Flask startup logs to make Render logs cleaner
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)
+    app.run(host="0.0.0.0", port=port)
