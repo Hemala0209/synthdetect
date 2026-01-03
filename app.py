@@ -16,7 +16,19 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # suppress INFO and WARNING messages
 
 # ---------------- Load Model ----------------
-model = tf.keras.models.load_model("synthetic_image_detector.h5")
+from keras.layers import DepthwiseConv2D
+
+# Custom DepthwiseConv2D to ignore 'groups' argument (needed for TF 2.10)
+class CustomDepthwiseConv2D(DepthwiseConv2D):
+    def __init__(self, *args, **kwargs):
+        kwargs.pop("groups", None)  # remove 'groups' if it exists
+        super().__init__(*args, **kwargs)
+
+# Load model using custom_objects
+model = tf.keras.models.load_model(
+    "synthetic_image_detector.h5",
+    custom_objects={"DepthwiseConv2D": CustomDepthwiseConv2D}
+)
 
 # ---------------- Haarcascade for face detection ----------------
 face_cascade = cv2.CascadeClassifier(
